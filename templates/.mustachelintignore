@@ -1,0 +1,4 @@
+ # The mobile app view uses Ionic/Angular syntax (*ngIf, [src], [params], (onSuccess)) that is
+ # not valid HTML5, so the vnu HTML validator must be skipped for this template. Mustache syntax
+ # and ESLint checks still run.
+mobile_view.mustache
