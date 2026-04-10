@@ -1,0 +1,49 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_spinningwheel/result_modal
+
+    Displays the spin result in a modal.
+
+    Context variables required for this template:
+    * selectedtext - The text of the selected entry
+    * pictureurl - Profile picture URL (optional)
+    * haspicture - Whether a picture URL is available
+    * winnermessage - Custom winner message (optional)
+    * haswinnermessage - Whether a winner message is set
+
+    Example context (json):
+    {
+        "selectedtext": "Alice",
+        "pictureurl": "",
+        "haspicture": false,
+        "winnermessage": "",
+        "haswinnermessage": false
+    }
+}}
+<div class="text-center p-3">
+    {{#haswinnermessage}}
+    <div class="mb-2 fs-6">
+        {{winnermessage}}
+    </div>
+    {{/haswinnermessage}}
+    {{#haspicture}}
+    <div class="mb-2">
+        <img src="{{pictureurl}}" class="rounded-circle" width="60" height="60" alt="{{selectedtext}}">
+    </div>
+    {{/haspicture}}
+    <div class="fs-3 fw-bold mb-1" aria-live="assertive">
+        {{selectedtext}}
+    </div>
+</div>

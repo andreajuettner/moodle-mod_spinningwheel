@@ -1,0 +1,62 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_spinningwheel/examples
+
+    Didactic examples page for the Spinning Wheel activity.
+
+    Context variables required for this template:
+    * viewurl - URL back to the activity view page
+    * scenarios - Array of scenario objects with: number, title, situation, implementation, benefit, settings
+
+    Example context (json):
+    {
+        "viewurl": "/mod/spinningwheel/view.php?id=1",
+        "scenarios": [
+            {
+                "number": 1,
+                "title": "Fair participation",
+                "situation": "Some students always raise their hand...",
+                "implementation": "The wheel is populated with all participants...",
+                "benefit": "Random selection is perceived as fair...",
+                "settings": "Entry source: Course participants..."
+            }
+        ]
+    }
+}}
+<div class="mod-spinningwheel-examples">
+    <div class="d-flex align-items-center mb-3">
+        <a href="{{viewurl}}" class="btn btn-sm btn-outline-secondary me-3">
+            &larr; {{#str}}back{{/str}}
+        </a>
+        <h3 class="mb-0">{{#str}}examples, mod_spinningwheel{{/str}}</h3>
+    </div>
+    <p class="text-muted mb-4">{{#str}}examples_intro, mod_spinningwheel{{/str}}</p>
+
+    {{#scenarios}}
+    <details class="mb-2 border rounded p-2">
+        <summary class="fw-semibold">{{number}}. {{title}}</summary>
+        <div class="ps-3 pt-2">
+            <h6 class="fw-bold">{{#str}}example_situation, mod_spinningwheel{{/str}}</h6>
+            <p>{{situation}}</p>
+            <h6 class="fw-bold">{{#str}}example_implementation, mod_spinningwheel{{/str}}</h6>
+            <p>{{implementation}}</p>
+            <h6 class="fw-bold">{{#str}}example_benefit, mod_spinningwheel{{/str}}</h6>
+            <p>{{benefit}}</p>
+            <h6 class="fw-bold">{{#str}}example_settings, mod_spinningwheel{{/str}}</h6>
+            <p>{{settings}}</p>
+        </div>
+    </details>
+    {{/scenarios}}
+</div>

@@ -1,0 +1,104 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_spinningwheel/view
+
+    Main view page for the Spinning Wheel wheel activity.
+
+    Context variables required for this template:
+    * cmid - Course module ID
+    * wheelid - Wheel instance ID
+    * canspin - Whether current user can spin
+    * canviewhistory - Whether current user can view history
+    * hasentries - Whether there are entries
+    * entriesjson - JSON-encoded entries array
+    * colorsjson - JSON-encoded colors array
+    * configjson - JSON-encoded config object
+    * showtitle - Whether to show the activity title
+    * activityname - The activity name
+    * showshadow - Whether to show wheel shadow
+
+    Example context (json):
+    {
+        "cmid": 1,
+        "wheelid": 1,
+        "canspin": true,
+        "canviewhistory": true,
+        "hasentries": true,
+        "showtitle": true,
+        "activityname": "Lucky Wheel",
+        "showshadow": true,
+        "entriesjson": "[{\"id\":1,\"text\":\"Alice\"},{\"id\":2,\"text\":\"Bob\"}]",
+        "colorsjson": "[\"#FF6384\",\"#36A2EB\"]",
+        "configjson": "{\"spintime\":5000,\"removeafter\":false,\"groupid\":0}"
+    }
+}}
+<div id="mod-spinningwheel-{{cmid}}"
+     class="mod-spinningwheel d-flex flex-column align-items-center gap-3"
+     data-cmid="{{cmid}}"
+     data-wheelid="{{wheelid}}">
+
+    {{#showtitle}}
+    <h3 class="wheel-title text-center mb-2 fw-semibold">{{activityname}}</h3>
+    {{/showtitle}}
+
+    {{#hasentries}}
+    <div class="wheel-stage position-relative d-inline-block {{#showshadow}}wheel-has-shadow{{/showshadow}}">
+        <div class="wheel-pointer-container position-absolute top-0 start-50 translate-middle-x" style="z-index: 2;" aria-hidden="true">
+            <div class="wheel-pointer"></div>
+        </div>
+        <canvas data-region="wheel-canvas"
+                class="img-fluid rounded-circle" aria-hidden="true"></canvas>
+    </div>
+
+    {{#canspin}}
+    <button data-action="spin" class="btn btn-primary btn-lg px-5" type="button">
+        {{#str}}spin, mod_spinningwheel{{/str}}
+    </button>
+    {{/canspin}}
+
+    <div data-region="result" class="visually-hidden fs-3 fw-bold text-center" role="status"
+         aria-live="polite"></div>
+    {{/hasentries}}
+
+    {{^hasentries}}
+    <div class="alert alert-info">
+        {{#str}}noentries, mod_spinningwheel{{/str}}
+    </div>
+    {{/hasentries}}
+
+    {{#canviewhistory}}
+    <details class="mt-3 w-100">
+        <summary class="fw-semibold">{{#str}}history, mod_spinningwheel{{/str}}</summary>
+        {{#canclearhistory}}
+        <div class="mt-2 mb-2">
+            <button data-action="clear-history" class="btn btn-sm btn-outline-danger" type="button">
+                {{#str}}clearhistory, mod_spinningwheel{{/str}}
+            </button>
+        </div>
+        {{/canclearhistory}}
+        <div data-region="history-table" class="mt-2">
+            <div class="text-muted">{{#str}}nospinsyet, mod_spinningwheel{{/str}}</div>
+        </div>
+    </details>
+    {{/canviewhistory}}
+</div>
+
+{{#hasentries}}
+{{#js}}
+require(['mod_spinningwheel/spinner'], function(Spinner) {
+    Spinner.init({{cmid}}, {{wheelid}}, {{{entriesjson}}}, {{{colorsjson}}}, {{{configjson}}});
+});
+{{/js}}
+{{/hasentries}}

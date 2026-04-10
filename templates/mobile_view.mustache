@@ -1,0 +1,172 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_spinningwheel/mobile_view
+
+    Mobile app view for the Spinning Wheel activity.
+    Rendered server-side via Mustache, then interpreted by the
+    Moodle mobile app as an Ionic/Angular template.
+
+    The wheel image and spin animation are handled by
+    mobile/js/mobile_spinner.js (loaded via the javascript parameter).
+
+    Context variables required for this template:
+    * cmid - Course module ID
+    * canspin - Whether current user can spin
+    * maxspinsreached - Whether max spins limit reached
+    * canviewhistory - Whether current user can view history
+    * hasentries - Whether there are entries
+    * hasresult - Whether a previous spin result exists
+    * resulttext - Pre-formatted result string
+    * hashistory - Whether history records exist
+    * history - Array of history objects (spunby, selectedtext, timeformatted)
+
+    CONTENT_OTHERDATA (Angular, from handler otherdata):
+    * cmid - Course module ID (string)
+    * intro - Formatted module intro HTML
+    * entries - JSON-encoded entries array (for canvas JS)
+    * colors - JSON-encoded colors array (for canvas JS)
+    * config - JSON-encoded config object (for canvas JS)
+    * labels - JSON-encoded labels object (for canvas JS)
+}}
+<div>
+    <core-course-module-description [description]="CONTENT_OTHERDATA.intro"
+        component="mod_spinningwheel" [componentId]="CONTENT_OTHERDATA.cmid">
+    </core-course-module-description>
+
+    {{#hasentries}}
+    <!-- Wheel with pointer — rendered as img via Angular binding (survives re-renders) -->
+    <div data-region="mobile-wheel-container"
+         style="max-width: 400px; margin: 0 auto; position: relative; padding-top: 20px;">
+        <!-- Pointer triangle -->
+        <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 2;
+                    width: 0; height: 0;
+                    border-left: 12px solid transparent;
+                    border-right: 12px solid transparent;
+                    border-top: 24px solid #dc3545;
+                    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));">
+        </div>
+        <img *ngIf="wheelImageUrl" [src]="wheelImageUrl"
+             data-region="mobile-wheel-image"
+             style="width: 100%; display: block; border-radius: 50%;"
+             alt="">
+        <!-- Result overlay (shown on top of wheel after spin) -->
+        <div *ngIf="spinResultText"
+             style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                    z-index: 3; background: rgba(40, 167, 69, 0.92); color: #fff;
+                    border-radius: 16px; padding: 16px 24px; text-align: center;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-width: 80%;">
+            <div *ngIf="spinWinnerMessage"
+                 style="font-size: 1.2em; font-weight: bold; margin-bottom: 8px;"
+                 [innerText]="spinWinnerMessage"></div>
+            <div style="font-size: 0.8em; opacity: 0.9; margin-bottom: 4px;">
+                {{#str}} mobile:spinresult, mod_spinningwheel {{/str}}
+            </div>
+            <div style="font-size: 1.4em; font-weight: bold;"
+                 [innerText]="spinResultText"></div>
+        </div>
+    </div>
+
+    {{#canspin}}
+    <div class="ion-padding">
+        <ion-button expand="block" color="primary"
+            data-action="mobile-spin"
+            core-site-plugins-call-ws
+            name="mod_spinningwheel_spin_wheel"
+            [params]="{cmid: {{cmid}}}"
+            [preSets]="{getFromCache: 0, saveToCache: 0}"
+            (onSuccess)="onSpinResult($event)">
+            <ion-icon name="sync-outline" slot="start"></ion-icon>
+            {{#str}} spin, mod_spinningwheel {{/str}}
+        </ion-button>
+    </div>
+    {{/canspin}}
+
+    {{#maxspinsreached}}
+    <div class="ion-padding">
+        <ion-text color="warning">
+            <p>{{#str}} maxspinsreached, mod_spinningwheel {{/str}}</p>
+        </ion-text>
+    </div>
+    {{/maxspinsreached}}
+
+    {{#hasresult}}
+    <!-- Previous result (from server, shown on initial load only when no new spin yet) -->
+    <div *ngIf="!spinResultText" class="ion-padding">
+        <ion-card>
+            <ion-card-header>
+                <ion-card-subtitle>{{#str}} mobile:spinresult, mod_spinningwheel {{/str}}</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+                <p style="font-size: 1.4em; font-weight: bold; text-align: center;">
+                    {{resulttext}}
+                </p>
+            </ion-card-content>
+        </ion-card>
+    </div>
+    {{/hasresult}}
+    {{/hasentries}}
+
+    {{^hasentries}}
+    <div class="ion-padding">
+        <ion-text color="medium">
+            <p>{{#str}} noentries, mod_spinningwheel {{/str}}</p>
+        </ion-text>
+    </div>
+    {{/hasentries}}
+
+    {{#canviewhistory}}
+    <ion-accordion-group>
+        <ion-accordion value="history">
+            <ion-item slot="header" color="light">
+                <ion-label>{{#str}} history, mod_spinningwheel {{/str}}</ion-label>
+            </ion-item>
+            <div slot="content">
+                {{#canclearhistory}}
+                <div class="ion-padding-horizontal ion-padding-top">
+                    <ion-button expand="block" color="danger" fill="outline" size="small"
+                        core-site-plugins-call-ws
+                        name="mod_spinningwheel_clear_history"
+                        [params]="{cmid: {{cmid}}}"
+                        [preSets]="{getFromCache: 0, saveToCache: 0}"
+                        confirmMessage="{{#str}} clearhistoryconfirm, mod_spinningwheel {{/str}}"
+                        core-site-plugins-call-ws-on-success="refreshContent()"
+                    >
+                        <ion-icon name="trash-outline" slot="start"></ion-icon>
+                        {{#str}} clearhistory, mod_spinningwheel {{/str}}
+                    </ion-button>
+                </div>
+                {{/canclearhistory}}
+                {{#hashistory}}
+                <ion-list>
+                    {{#history}}
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">
+                            <h3>{{selectedtext}}</h3>
+                            <p>{{spunby}} — {{timeformatted}}</p>
+                        </ion-label>
+                    </ion-item>
+                    {{/history}}
+                </ion-list>
+                {{/hashistory}}
+                {{^hashistory}}
+                <ion-item>
+                    <ion-label color="medium">{{#str}} nospinsyet, mod_spinningwheel {{/str}}</ion-label>
+                </ion-item>
+                {{/hashistory}}
+            </div>
+        </ion-accordion>
+    </ion-accordion-group>
+    {{/canviewhistory}}
+</div>

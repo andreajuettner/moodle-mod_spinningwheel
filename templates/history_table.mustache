@@ -1,0 +1,55 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_spinningwheel/history_table
+
+    Displays the spin history table.
+
+    Context variables required for this template:
+    * spins - Array of spin records
+    * spins.spunby - Who spun
+    * spins.selectedtext - What was selected
+    * spins.timeformatted - Formatted time
+
+    Example context (json):
+    {
+        "hasspins": true,
+        "spins": [
+            {"spunby": "Teacher One", "selectedtext": "Alice", "timeformatted": "11 Feb 2026, 12:00"}
+        ]
+    }
+}}
+{{#hasspins}}
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th scope="col">{{#str}}spunby, mod_spinningwheel{{/str}}</th>
+            <th scope="col">{{#str}}selectedentry, mod_spinningwheel{{/str}}</th>
+            <th scope="col">{{#str}}spinnedat, mod_spinningwheel{{/str}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#spins}}
+        <tr>
+            <td>{{spunby}}</td>
+            <td><strong>{{selectedtext}}</strong></td>
+            <td>{{timeformatted}}</td>
+        </tr>
+        {{/spins}}
+    </tbody>
+</table>
+{{/hasspins}}
+{{^hasspins}}
+<div class="text-muted">{{#str}}nospinsyet, mod_spinningwheel{{/str}}</div>
+{{/hasspins}}
