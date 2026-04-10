@@ -28,4 +28,4 @@ $plugin->version   = 2026041100;
 $plugin->requires  = 2025092600;
 $plugin->component = 'mod_spinningwheel';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0.0';
+$plugin->release   = '1.1.0';

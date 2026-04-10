@@ -372,4 +372,134 @@ class external_test extends \advanced_testcase {
 
         $this->assertEmpty($result['spins']);
     }
+
+    /**
+     * Test spinning in activities mode returns an activityurl.
+     */
+    public function test_spin_wheel_activities_mode(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $teacher = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+
+        // Create some activities in the course.
+        $this->getDataGenerator()->create_module('assign', [
+            'course' => $course->id,
+            'name' => 'Activity A',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+        $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'name' => 'Activity B',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        $cm = get_coursemodule_from_instance('spinningwheel', $spinningwheel->id);
+        $this->setUser($teacher);
+
+        $result = spin_wheel::execute($cm->id);
+        $result = \core_external\external_api::clean_returnvalue(spin_wheel::execute_returns(), $result);
+
+        $this->assertNotEmpty($result['selectedtext']);
+        $this->assertNotEmpty($result['activityurl']);
+        $this->assertContains($result['selectedtext'], ['Activity A', 'Activity B']);
+    }
+
+    /**
+     * Test that spinning is blocked when the user has an incomplete unlocked activity.
+     */
+    public function test_spin_wheel_blocked_by_pending(): void {
+        $this->resetAfterTest();
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $teacher = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+
+        $assign = $this->getDataGenerator()->create_module('assign', [
+            'course' => $course->id,
+            'name' => 'Blocking Activity',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+        $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'name' => 'Another Activity',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        $assigncm = get_coursemodule_from_instance('assign', $assign->id);
+        $cm = get_coursemodule_from_instance('spinningwheel', $spinningwheel->id);
+        $this->setUser($teacher);
+
+        // Record a previous spin with selectedcmid pointing to the assignment (not completed).
+        $spin = new \stdClass();
+        $spin->wheelid = $spinningwheel->id;
+        $spin->userid = $teacher->id;
+        $spin->selectedcmid = $assigncm->id;
+        $spin->selectedtext = 'Blocking Activity';
+        $spin->timecreated = time();
+        $DB->insert_record('spinningwheel_spins', $spin);
+
+        // Try to spin again - should be blocked.
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('pendingactivity', 'spinningwheel', 'Blocking Activity'));
+        spin_wheel::execute($cm->id);
+    }
+
+    /**
+     * Test that spinning in activities mode does not select a completed activity.
+     */
+    public function test_spin_wheel_skips_completed(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $teacher = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+
+        // Create two activities: one will be completed, one will remain incomplete.
+        $completedassign = $this->getDataGenerator()->create_module('assign', [
+            'course' => $course->id,
+            'name' => 'Completed Activity',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+        $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'name' => 'Open Activity',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        $this->setUser($teacher);
+
+        // Mark the first activity as complete.
+        $completedcm = get_coursemodule_from_instance('assign', $completedassign->id);
+        $completion = new \completion_info($course);
+        $completion->update_state($completedcm, COMPLETION_COMPLETE, $teacher->id);
+
+        $cm = get_coursemodule_from_instance('spinningwheel', $spinningwheel->id);
+
+        // Spin once — the only spinnable activity should be "Open Activity".
+        $result = spin_wheel::execute($cm->id);
+        $result = \core_external\external_api::clean_returnvalue(spin_wheel::execute_returns(), $result);
+
+        // The selected entry should be the open activity, never the completed one.
+        $this->assertNotEquals('Completed Activity', $result['selectedtext'],
+            'Completed activity should not be selected by the wheel');
+        $this->assertEquals('Open Activity', $result['selectedtext']);
+    }
 }

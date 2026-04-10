@@ -98,6 +98,7 @@ class view_page implements renderable, templatable {
                 'id' => $entry->id ?? 0,
                 'text' => $entry->text,
                 'picture' => '',
+                'completed' => !empty($entry->completed),
             ];
 
             if ($isparticipant && $displaymode > 0 && !empty($entry->userrecord)) {
@@ -114,7 +115,47 @@ class view_page implements renderable, templatable {
         $data = new stdClass();
         $data->cmid = $this->cmid;
         $data->wheelid = $this->spinningwheel->id;
-        $data->canspin = $this->canspin;
+        // In activity mode, check if student has a pending (uncompleted) activity.
+        $pendingactivity = null;
+        if ($this->spinningwheel->entrysource == SPINNINGWHEEL_SOURCE_ACTIVITIES) {
+            global $USER;
+            $course = get_course($this->spinningwheel->course);
+            $pendingactivity = spinningwheel_get_pending_activity(
+                (int)$this->spinningwheel->id, $USER->id, $course
+            );
+        }
+
+        $data->canspin = $this->canspin && !$pendingactivity;
+        $data->haspendingactivity = !empty($pendingactivity);
+        if ($pendingactivity) {
+            $data->pendingactivityname = $pendingactivity->name;
+            $modinfo = get_fast_modinfo($this->spinningwheel->course);
+            if (isset($modinfo->cms[$pendingactivity->cmid])) {
+                $data->pendingactivityurl = $modinfo->cms[$pendingactivity->cmid]->url->out(false);
+            }
+        }
+
+        // Check if only one spinnable activity remains — no need to spin.
+        if ($this->spinningwheel->entrysource == SPINNINGWHEEL_SOURCE_ACTIVITIES && !$pendingactivity) {
+            $spinnablecount = count(array_filter($entriesdata, fn($e) => empty($e['completed'])));
+            if ($spinnablecount === 1) {
+                $lastentry = current(array_filter($this->entries, fn($e) => !empty($e->active)));
+                if ($lastentry && !empty($lastentry->cmid)) {
+                    $data->canspin = false;
+                    $data->haslastactivity = true;
+                    $data->lastactivityname = format_string(
+                        explode("\n", $lastentry->text)[0]
+                    );
+                    $modinfo = $modinfo ?? get_fast_modinfo($this->spinningwheel->course);
+                    if (isset($modinfo->cms[$lastentry->cmid])) {
+                        $data->lastactivityurl = $modinfo->cms[$lastentry->cmid]->url->out(false);
+                    }
+                }
+            } elseif ($spinnablecount === 0) {
+                $data->canspin = false;
+                $data->allcompleted = true;
+            }
+        }
         $data->canviewhistory = $this->canviewhistory;
         $data->canclearhistory = has_capability('mod/spinningwheel:clearhistory',
             \context_module::instance($this->cmid));

@@ -53,8 +53,8 @@ class backup_spinningwheel_activity_structure_step extends backup_activity_struc
 
         $spins = new backup_nested_element('spins');
         $spin = new backup_nested_element('spin', ['id'], [
-            'userid', 'selectedentryid', 'selecteduserid', 'selectedtext',
-            'groupid', 'timecreated',
+            'userid', 'selectedentryid', 'selecteduserid', 'selectedcmid',
+            'selectedtext', 'groupid', 'timecreated',
         ]);
 
         $spinningwheel->add_child($entries);

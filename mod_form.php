@@ -48,11 +48,25 @@ class mod_spinningwheel_mod_form extends moodleform_mod {
         // Entry source section.
         $mform->addElement('header', 'entryhdr', get_string('entrysource', 'spinningwheel'));
 
-        $mform->addElement('select', 'entrysource', get_string('entrysource', 'spinningwheel'), [
+        $entrysourceoptions = [
             SPINNINGWHEEL_SOURCE_PARTICIPANTS => get_string('entrysource_participants', 'spinningwheel'),
             SPINNINGWHEEL_SOURCE_MANUAL => get_string('entrysource_manual', 'spinningwheel'),
-        ]);
+        ];
+
+        // Add "Course activities" option only if availability_spinningwheel is installed.
+        $availabilityplugininstalled = \core_plugin_manager::instance()->get_plugin_info('availability_spinningwheel');
+        if ($availabilityplugininstalled) {
+            $entrysourceoptions[SPINNINGWHEEL_SOURCE_ACTIVITIES] = get_string('entrysource_activities', 'spinningwheel');
+        }
+
+        $mform->addElement('select', 'entrysource', get_string('entrysource', 'spinningwheel'), $entrysourceoptions);
         $mform->addHelpButton('entrysource', 'entrysource', 'spinningwheel');
+
+        // Show info notice when availability plugin is not installed.
+        if (!$availabilityplugininstalled) {
+            $mform->addElement('static', 'entrysource_activities_info', '',
+                get_string('entrysource_activities_notinstalled', 'spinningwheel'));
+        }
 
         // Role filter (only for participant mode).
         $roles = role_get_names(context_system::instance(), ROLENAME_ORIGINAL);
@@ -69,6 +83,7 @@ class mod_spinningwheel_mod_form extends moodleform_mod {
         );
         $mform->addHelpButton('rolefilter', 'rolefilter', 'spinningwheel');
         $mform->hideIf('rolefilter', 'entrysource', 'eq', SPINNINGWHEEL_SOURCE_MANUAL);
+        $mform->hideIf('rolefilter', 'entrysource', 'eq', SPINNINGWHEEL_SOURCE_ACTIVITIES);
 
         // Manual entries textarea (only for manual mode).
         $mform->addElement(
@@ -80,6 +95,7 @@ class mod_spinningwheel_mod_form extends moodleform_mod {
         $mform->addHelpButton('manualentries', 'manualentries', 'spinningwheel');
         $mform->setType('manualentries', PARAM_TEXT);
         $mform->hideIf('manualentries', 'entrysource', 'eq', SPINNINGWHEEL_SOURCE_PARTICIPANTS);
+        $mform->hideIf('manualentries', 'entrysource', 'eq', SPINNINGWHEEL_SOURCE_ACTIVITIES);
 
         // Behaviour section.
         $mform->addElement('header', 'behaviourhdr', get_string('behaviour', 'spinningwheel'));
@@ -104,6 +120,9 @@ class mod_spinningwheel_mod_form extends moodleform_mod {
 
         $mform->addElement('selectyesno', 'allowstudentspin', get_string('allowstudentspin', 'spinningwheel'));
         $mform->addHelpButton('allowstudentspin', 'allowstudentspin', 'spinningwheel');
+        // Lock to "Yes" when using course activities mode (students must be able to spin).
+        $mform->setDefault('allowstudentspin', 0);
+        $mform->disabledIf('allowstudentspin', 'entrysource', 'eq', SPINNINGWHEEL_SOURCE_ACTIVITIES);
 
         // Appearance section.
         $mform->addElement('header', 'appearancehdr', get_string('appearance'));
@@ -214,6 +233,11 @@ class mod_spinningwheel_mod_form extends moodleform_mod {
             return;
         }
 
+        // Force allowstudentspin display to "Yes" when in activities mode.
+        if (!empty($defaultvalues['entrysource']) && (int)$defaultvalues['entrysource'] === SPINNINGWHEEL_SOURCE_ACTIVITIES) {
+            $defaultvalues['allowstudentspin'] = 1;
+        }
+
         // Convert rolefilter from comma-separated to array for autocomplete.
         if (!empty($defaultvalues['rolefilter'])) {
             $defaultvalues['rolefilter'] = explode(',', $defaultvalues['rolefilter']);
@@ -242,6 +266,11 @@ class mod_spinningwheel_mod_form extends moodleform_mod {
     #[\Override]
     public function data_postprocessing($data) {
         parent::data_postprocessing($data);
+
+        // Force allow student spin when using course activities mode.
+        if (isset($data->entrysource) && (int)$data->entrysource === SPINNINGWHEEL_SOURCE_ACTIVITIES) {
+            $data->allowstudentspin = 1;
+        }
 
         // Convert rolefilter array back to comma-separated string.
         if (!empty($data->rolefilter) && is_array($data->rolefilter)) {

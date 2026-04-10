@@ -382,4 +382,227 @@ class lib_test extends \advanced_testcase {
         $this->assertEquals(0, $entries[0]->sortorder);
         $this->assertEquals(2, $entries[2]->sortorder);
     }
+
+    /**
+     * Test that get_active_entries in activities mode returns course activities.
+     */
+    public function test_get_active_entries_activities_mode(): void {
+        $this->resetAfterTest();
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $this->setUser($user);
+
+        // Create some other activities in the course.
+        $assign = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'name' => 'Test Assignment']);
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'name' => 'Test Page']);
+        $forum = $this->getDataGenerator()->create_module('forum', ['course' => $course->id, 'name' => 'Test Forum']);
+
+        // Create the spinning wheel with activities mode.
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        $cm = get_coursemodule_from_instance('spinningwheel', $spinningwheel->id);
+        $context = \context_module::instance($cm->id);
+        $instance = $DB->get_record('spinningwheel', ['id' => $spinningwheel->id]);
+
+        $entries = spinningwheel_get_active_entries($instance, $context);
+
+        // Should contain the 3 other activities but not the wheel itself.
+        $this->assertGreaterThanOrEqual(3, count($entries));
+        $texts = array_column($entries, 'text');
+        $this->assertContains('Test Assignment', $texts);
+        $this->assertContains('Test Page', $texts);
+        $this->assertContains('Test Forum', $texts);
+    }
+
+    /**
+     * Test that get_course_activity_entries excludes the wheel itself.
+     */
+    public function test_get_course_activity_entries_excludes_self(): void {
+        $this->resetAfterTest();
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $this->setUser($user);
+
+        $assign = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'name' => 'My Assignment']);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+            'name' => 'My Wheel',
+        ]);
+
+        $cm = get_coursemodule_from_instance('spinningwheel', $spinningwheel->id);
+        $context = \context_module::instance($cm->id);
+        $instance = $DB->get_record('spinningwheel', ['id' => $spinningwheel->id]);
+
+        $entries = spinningwheel_get_course_activity_entries($instance, $context);
+
+        $cmids = array_map('intval', array_column($entries, 'cmid'));
+        $this->assertNotContains((int) $cm->id, $cmids, 'Wheel itself should not be in entries');
+
+        // The assignment should be in the list.
+        $assigncm = get_coursemodule_from_instance('assign', $assign->id);
+        $this->assertContains((int) $assigncm->id, $cmids, 'Assignment should be in entries');
+    }
+
+    /**
+     * Test that completed activities are marked with completed=true and active=0.
+     */
+    public function test_get_course_activity_entries_completed_marked(): void {
+        $this->resetAfterTest();
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $this->setUser($user);
+
+        // Create an activity with completion enabled.
+        $assign = $this->getDataGenerator()->create_module('assign', [
+            'course' => $course->id,
+            'name' => 'Completable Assignment',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        $assigncm = get_coursemodule_from_instance('assign', $assign->id);
+
+        // Mark the activity as complete for the user.
+        $completion = new \completion_info($course);
+        $completion->update_state($assigncm, COMPLETION_COMPLETE, $user->id);
+
+        $cm = get_coursemodule_from_instance('spinningwheel', $spinningwheel->id);
+        $context = \context_module::instance($cm->id);
+        $instance = $DB->get_record('spinningwheel', ['id' => $spinningwheel->id]);
+
+        $entries = spinningwheel_get_course_activity_entries($instance, $context);
+
+        // Find the assignment entry.
+        $assignentry = null;
+        foreach ($entries as $entry) {
+            if ($entry->cmid == $assigncm->id) {
+                $assignentry = $entry;
+                break;
+            }
+        }
+
+        $this->assertNotNull($assignentry, 'Assignment entry should exist in entries list');
+        $this->assertTrue($assignentry->completed);
+        $this->assertEquals(0, $assignentry->active);
+    }
+
+    /**
+     * Test that get_pending_activity returns null when no spins have been recorded.
+     */
+    public function test_get_pending_activity_none(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $this->setUser($user);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        $result = spinningwheel_get_pending_activity($spinningwheel->id, $user->id, $course);
+        $this->assertNull($result);
+    }
+
+    /**
+     * Test that get_pending_activity returns the activity info when a spin has been
+     * recorded but the activity is not yet completed.
+     */
+    public function test_get_pending_activity_with_incomplete(): void {
+        $this->resetAfterTest();
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $this->setUser($user);
+
+        $assign = $this->getDataGenerator()->create_module('assign', [
+            'course' => $course->id,
+            'name' => 'Pending Assignment',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+        $assigncm = get_coursemodule_from_instance('assign', $assign->id);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        // Record a spin with selectedcmid pointing to the assignment.
+        $spin = new \stdClass();
+        $spin->wheelid = $spinningwheel->id;
+        $spin->userid = $user->id;
+        $spin->selectedcmid = $assigncm->id;
+        $spin->selectedtext = 'Pending Assignment';
+        $spin->timecreated = time();
+        $DB->insert_record('spinningwheel_spins', $spin);
+
+        $result = spinningwheel_get_pending_activity($spinningwheel->id, $user->id, $course);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($assigncm->id, $result->cmid);
+        $this->assertStringContainsString('Pending Assignment', $result->name);
+    }
+
+    /**
+     * Test that get_pending_activity returns null when the spun activity has been completed.
+     */
+    public function test_get_pending_activity_after_completion(): void {
+        $this->resetAfterTest();
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $this->setUser($user);
+
+        $assign = $this->getDataGenerator()->create_module('assign', [
+            'course' => $course->id,
+            'name' => 'Done Assignment',
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+        $assigncm = get_coursemodule_from_instance('assign', $assign->id);
+
+        $spinningwheel = $this->getDataGenerator()->create_module('spinningwheel', [
+            'course' => $course->id,
+            'entrysource' => SPINNINGWHEEL_SOURCE_ACTIVITIES,
+        ]);
+
+        // Record a spin with selectedcmid pointing to the assignment.
+        $spin = new \stdClass();
+        $spin->wheelid = $spinningwheel->id;
+        $spin->userid = $user->id;
+        $spin->selectedcmid = $assigncm->id;
+        $spin->selectedtext = 'Done Assignment';
+        $spin->timecreated = time();
+        $DB->insert_record('spinningwheel_spins', $spin);
+
+        // Mark the activity as complete.
+        $completion = new \completion_info($course);
+        $completion->update_state($assigncm, COMPLETION_COMPLETE, $user->id);
+
+        $result = spinningwheel_get_pending_activity($spinningwheel->id, $user->id, $course);
+        $this->assertNull($result);
+    }
 }

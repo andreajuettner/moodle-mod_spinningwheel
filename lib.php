@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 define('SPINNINGWHEEL_SOURCE_PARTICIPANTS', 0);
 define('SPINNINGWHEEL_SOURCE_MANUAL', 1);
+define('SPINNINGWHEEL_SOURCE_ACTIVITIES', 2);
 
 /**
  * Returns whether the module supports a particular feature.
@@ -201,6 +202,10 @@ function spinningwheel_get_active_entries(stdClass $spinningwheel, context_modul
         ], 'sortorder ASC'));
     }
 
+    if ($spinningwheel->entrysource == SPINNINGWHEEL_SOURCE_ACTIVITIES) {
+        return spinningwheel_get_course_activity_entries($spinningwheel, $context);
+    }
+
     $roleids = !empty($spinningwheel->rolefilter) ? explode(',', $spinningwheel->rolefilter) : [];
     $picturefields = implode(',', array_map(fn($f) => "u.$f", \core_user\fields::get_picture_fields()));
     $users = get_enrolled_users($context, '', $groupid, $picturefields);
@@ -248,6 +253,118 @@ function spinningwheel_get_active_entries(stdClass $spinningwheel, context_modul
     }
 
     return array_values($entries);
+}
+
+/**
+ * Get course activities as wheel entries.
+ *
+ * Returns all visible activities in the course (excluding the wheel itself)
+ * as entry objects for the spinning wheel.
+ *
+ * @param stdClass $spinningwheel Instance record.
+ * @param context_module $context Module context.
+ * @return array Array of entry objects with 'id' (cmid), 'text' (activity name), 'cmid'.
+ */
+function spinningwheel_get_course_activity_entries(stdClass $spinningwheel, context_module $context): array {
+    global $DB, $USER;
+
+    $cm = get_coursemodule_from_instance('spinningwheel', $spinningwheel->id);
+    $modinfo = get_fast_modinfo($spinningwheel->course);
+    $coursecontext = \context_course::instance($spinningwheel->course);
+    $entries = [];
+
+    $course = get_course($spinningwheel->course);
+    $completion = new completion_info($course);
+
+    foreach ($modinfo->get_cms() as $othercm) {
+        // Skip the wheel itself, hidden activities, and activities being deleted.
+        if ($othercm->id == $cm->id || !$othercm->visible || $othercm->deletioninprogress) {
+            continue;
+        }
+
+        $entry = new stdClass();
+        $entry->id = 0;
+        $entry->cmid = $othercm->id;
+        $entry->userid = null;
+        $entry->text = format_string($othercm->name, true, ['context' => $coursecontext]);
+        $entry->active = 1;
+        $entry->completed = false;
+
+        // Check completion status for current user.
+        if ($completion->is_enabled($othercm)) {
+            $completiondata = $completion->get_data($othercm, true, $USER->id);
+            if ($completiondata->completionstate != COMPLETION_INCOMPLETE) {
+                $entry->completed = true;
+                $entry->active = 0;
+                $entry->text .= "\n" . get_string('completed', 'spinningwheel');
+            }
+        }
+
+        $entries[] = $entry;
+    }
+
+    // Remove already-spun activities if removeafter is enabled.
+    if ($spinningwheel->removeafter) {
+        $spuncmids = $DB->get_fieldset_sql(
+            'SELECT DISTINCT selectedcmid FROM {spinningwheel_spins}
+              WHERE wheelid = ? AND selectedcmid IS NOT NULL AND userid = ?',
+            [$spinningwheel->id, $USER->id]
+        );
+        $entries = array_filter($entries, function ($entry) use ($spuncmids) {
+            return !in_array($entry->cmid, $spuncmids);
+        });
+    }
+
+    return array_values($entries);
+}
+
+/**
+ * Check if the user has a previously unlocked activity that is not yet completed.
+ *
+ * Returns the pending activity info if found, or null if the user can spin again.
+ *
+ * @param int $wheelid The spinning wheel instance ID.
+ * @param int $userid The user ID to check.
+ * @param stdClass $course The course object.
+ * @return stdClass|null Object with cmid and name if pending, null if free to spin.
+ */
+function spinningwheel_get_pending_activity(int $wheelid, int $userid, stdClass $course): ?stdClass {
+    global $DB;
+
+    // Get all activities this user has unlocked via this wheel.
+    $spuncmids = $DB->get_fieldset_sql(
+        'SELECT DISTINCT selectedcmid FROM {spinningwheel_spins}
+          WHERE wheelid = ? AND userid = ? AND selectedcmid IS NOT NULL',
+        [$wheelid, $userid]
+    );
+
+    if (empty($spuncmids)) {
+        return null;
+    }
+
+    $completion = new completion_info($course);
+    if (!$completion->is_enabled()) {
+        return null;
+    }
+
+    $modinfo = get_fast_modinfo($course);
+
+    // Check each unlocked activity — is it still incomplete?
+    foreach ($spuncmids as $cmid) {
+        if (!isset($modinfo->cms[$cmid])) {
+            continue;
+        }
+        $cm = $modinfo->cms[$cmid];
+        if ($cm->deletioninprogress) {
+            continue;
+        }
+        $completiondata = $completion->get_data($cm, false, $userid);
+        if ($completiondata->completionstate == COMPLETION_INCOMPLETE) {
+            return (object)['cmid' => $cmid, 'name' => format_string($cm->name)];
+        }
+    }
+
+    return null;
 }
 
 /**

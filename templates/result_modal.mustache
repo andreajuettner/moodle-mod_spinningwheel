@@ -22,6 +22,8 @@
     * haspicture - Whether a picture URL is available
     * winnermessage - Custom winner message (optional)
     * haswinnermessage - Whether a winner message is set
+    * activityurl - URL of the selected activity (optional)
+    * hasactivityurl - Whether an activity URL is available
 
     Example context (json):
     {
@@ -29,7 +31,9 @@
         "pictureurl": "",
         "haspicture": false,
         "winnermessage": "",
-        "haswinnermessage": false
+        "haswinnermessage": false,
+        "activityurl": "",
+        "hasactivityurl": false
     }
 }}
 <div class="text-center p-3">
@@ -46,4 +50,14 @@
     <div class="fs-3 fw-bold mb-1" aria-live="assertive">
         {{selectedtext}}
     </div>
+    {{#hasactivityurl}}
+    <div class="mt-3 d-flex justify-content-center gap-2">
+        <a href="{{activityurl}}" class="btn btn-primary" data-action="goto-activity">
+            {{#str}}startnow, mod_spinningwheel{{/str}}
+        </a>
+        <button type="button" class="btn btn-outline-secondary" data-action="dismiss">
+            {{#str}}later, mod_spinningwheel{{/str}}
+        </button>
+    </div>
+    {{/hasactivityurl}}
 </div>
