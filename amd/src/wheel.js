@@ -108,12 +108,15 @@ export const draw = (canvas, entries, colors, rotation = 0, config = {}) => {
         const endAngle = startAngle + sliceAngle;
         const color = colors[i % colors.length];
 
+        const isCompleted = entries[i].completed || false;
+
         // Draw segment.
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, radius, startAngle, endAngle);
         ctx.closePath();
-        ctx.fillStyle = color;
+        // Completed activities are greyed out.
+        ctx.fillStyle = isCompleted ? '#cccccc' : color;
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
@@ -123,7 +126,7 @@ export const draw = (canvas, entries, colors, rotation = 0, config = {}) => {
         ctx.save();
         ctx.rotate(startAngle + sliceAngle / 2);
 
-        const textColor = getContrastColor(color);
+        const textColor = isCompleted ? '#666666' : getContrastColor(color);
 
         if (displaymode === 2 && entries[i].picture) {
             drawCircularImage(ctx, entries[i].picture, radius * PIC_RADIUS_LARGE, 0, PIC_SIZE_LARGE);
@@ -173,14 +176,36 @@ const drawRadialText = (ctx, text, radius, count, color) => {
     ctx.font = `600 ${fontSize}px system-ui, -apple-system, sans-serif`;
 
     const maxWidth = radius * 0.35;
-    if (ctx.measureText(text).width > maxWidth) {
-        while (ctx.measureText(text + '\u2026').width > maxWidth && text.length > 0) {
-            text = text.slice(0, -1);
-        }
-        text += '\u2026';
-    }
+    const lines = text.split('\n');
+    const xPos = radius * TEXT_RADIUS;
 
-    ctx.fillText(text, radius * TEXT_RADIUS, 0);
+    if (lines.length === 1) {
+        // Single line — truncate if needed.
+        let line = lines[0];
+        if (ctx.measureText(line).width > maxWidth) {
+            while (ctx.measureText(line + '\u2026').width > maxWidth && line.length > 0) {
+                line = line.slice(0, -1);
+            }
+            line += '\u2026';
+        }
+        ctx.fillText(line, xPos, 0);
+    } else {
+        // Multi-line — draw first line above center, second below.
+        const lineHeight = fontSize * 1.2;
+        let line1 = lines[0];
+        if (ctx.measureText(line1).width > maxWidth) {
+            while (ctx.measureText(line1 + '\u2026').width > maxWidth && line1.length > 0) {
+                line1 = line1.slice(0, -1);
+            }
+            line1 += '\u2026';
+        }
+        ctx.fillText(line1, xPos, -lineHeight / 2);
+
+        // Second line smaller and lighter.
+        const smallFontSize = Math.max(8, fontSize - 3);
+        ctx.font = `400 ${smallFontSize}px system-ui, -apple-system, sans-serif`;
+        ctx.fillText(lines[1], xPos, lineHeight / 2);
+    }
 };
 
 /**

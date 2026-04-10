@@ -84,24 +84,38 @@ class spin_wheel extends external_api {
             }
         }
 
-        // Get active entries.
+        // In activity mode, block spinning if user has an uncompleted unlocked activity.
         require_once(__DIR__ . '/../../lib.php');
+        if ($spinningwheel->entrysource == SPINNINGWHEEL_SOURCE_ACTIVITIES) {
+            $pending = spinningwheel_get_pending_activity($spinningwheel->id, $USER->id, $course);
+            if ($pending) {
+                throw new \moodle_exception('pendingactivity', 'spinningwheel', '', $pending->name);
+            }
+        }
+
+        // Get active entries.
         $entries = spinningwheel_get_active_entries($spinningwheel, $context, $params['groupid']);
 
-        if (empty($entries)) {
+        // Filter out completed/inactive entries for spinning.
+        $spinnable = array_values(array_filter($entries, function($e) {
+            return !empty($e->active);
+        }));
+
+        if (empty($spinnable)) {
             throw new \moodle_exception('noentries', 'spinningwheel');
         }
 
-        // Cryptographically secure random selection.
-        $selectedindex = random_int(0, count($entries) - 1);
-        $selected = $entries[$selectedindex];
+        // Cryptographically secure random selection from spinnable entries only.
+        $selectedindex = random_int(0, count($spinnable) - 1);
+        $selected = $spinnable[$selectedindex];
 
         // Record the spin.
         $spin = new \stdClass();
         $spin->wheelid = $spinningwheel->id;
         $spin->userid = $USER->id;
         $spin->selectedentryid = $selected->id ?: null;
-        $spin->selecteduserid = $selected->userid ?: null;
+        $spin->selecteduserid = !empty($selected->userid) ? $selected->userid : null;
+        $spin->selectedcmid = !empty($selected->cmid) ? $selected->cmid : null;
         $spin->selectedtext = $selected->text;
         $spin->groupid = $params['groupid'] ?: null;
         $spin->timecreated = time();
@@ -139,12 +153,24 @@ class spin_wheel extends external_api {
             $pictureurl = $userpicture->get_url($PAGE)->out(false);
         }
 
+        // Build activity URL if in activities mode.
+        $activityurl = '';
+        if (!empty($selected->cmid)) {
+            $activityurl = (new \moodle_url('/mod/spinningwheel/view.php', ['id' => $selected->cmid]))->out(false);
+            // Get the actual module URL from modinfo.
+            $modinfo = get_fast_modinfo($course);
+            if (isset($modinfo->cms[$selected->cmid])) {
+                $activityurl = $modinfo->cms[$selected->cmid]->url->out(false);
+            }
+        }
+
         return [
             'selectedindex' => $selectedindex,
             'selectedtext' => $selected->text,
             'pictureurl' => $pictureurl,
             'entryid' => $selected->id ?? 0,
             'remainingcount' => count($entries) - ($spinningwheel->removeafter ? 1 : 0),
+            'activityurl' => $activityurl,
         ];
     }
 
@@ -160,6 +186,7 @@ class spin_wheel extends external_api {
             'selectedtext' => new external_value(PARAM_TEXT, 'Text of the selected entry'),
             'pictureurl' => new external_value(PARAM_URL, 'Profile picture URL', VALUE_OPTIONAL, ''),
             'entryid' => new external_value(PARAM_INT, 'ID of the selected entry'),
+            'activityurl' => new external_value(PARAM_URL, 'URL of the selected activity', VALUE_OPTIONAL, ''),
             'remainingcount' => new external_value(PARAM_INT, 'Number of remaining entries'),
         ]);
     }

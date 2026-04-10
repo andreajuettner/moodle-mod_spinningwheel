@@ -68,6 +68,34 @@
     </button>
     {{/canspin}}
 
+    {{#haslastactivity}}
+    <div class="alert alert-info mt-3 mb-0 p-3 text-center fs-6 w-100" role="alert">
+        {{#str}}lastactivity_notice, mod_spinningwheel, {{lastactivityname}}{{/str}}
+        <div class="mt-3">
+            <a href="{{lastactivityurl}}" class="btn btn-secondary" data-action="goto-activity">
+                {{#str}}startnow, mod_spinningwheel{{/str}}
+            </a>
+        </div>
+    </div>
+    {{/haslastactivity}}
+
+    {{#allcompleted}}
+    <div class="alert alert-info mt-3 mb-0 p-3 text-center fs-6 w-100" role="alert">
+        {{#str}}allcompleted_notice, mod_spinningwheel{{/str}}
+    </div>
+    {{/allcompleted}}
+
+    {{#haspendingactivity}}
+    <div class="alert alert-info mt-3 mb-0 p-3 text-center fs-6 w-100" role="alert">
+        {{#str}}pendingactivity_notice, mod_spinningwheel, {{pendingactivityname}}{{/str}}
+        <div class="mt-3">
+            <a href="{{pendingactivityurl}}" class="btn btn-secondary" data-action="goto-activity">
+                {{#str}}startnow, mod_spinningwheel{{/str}}
+            </a>
+        </div>
+    </div>
+    {{/haspendingactivity}}
+
     <div data-region="result" class="visually-hidden fs-3 fw-bold text-center" role="status"
          aria-live="polite"></div>
     {{/hasentries}}

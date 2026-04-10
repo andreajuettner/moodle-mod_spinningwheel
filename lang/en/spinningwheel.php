@@ -44,9 +44,11 @@ $string['spinningwheel:clearhistory'] = 'Clear spin history';
 
 // Form.
 $string['entrysource'] = 'Entry source';
-$string['entrysource_help'] = 'Choose whether to populate the wheel from enrolled course participants or from manual entries.';
+$string['entrysource_help'] = 'Choose whether to populate the wheel from enrolled course participants, manual entries, or course activities. The "Course activities" option requires the availability_spinningwheel plugin to control activity access.';
 $string['entrysource_participants'] = 'Course participants';
 $string['entrysource_manual'] = 'Manual entries';
+$string['entrysource_activities'] = 'Course activities';
+$string['entrysource_activities_notinstalled'] = '<small class="text-muted">ⓘ The "Course activities" entry source requires the <strong>availability_spinningwheel</strong> plugin. <a href="https://github.com/andreajuettner/moodle-availability_spinningwheel" target="_blank">Learn more</a></small>';
 $string['rolefilter'] = 'Role filter';
 $string['rolefilter_help'] = 'Only include users with the selected roles on the wheel. Leave empty to include all enrolled users.';
 $string['manualentries'] = 'Manual entries';
@@ -79,6 +81,13 @@ $string['historycleared'] = 'Spin history has been cleared.';
 $string['spincount'] = '{$a} spin(s)';
 $string['maxspinsreached'] = 'Maximum number of spins reached.';
 $string['removespins'] = 'Remove all spin records';
+$string['startnow'] = 'Start now';
+$string['later'] = 'Later';
+$string['completed'] = '(completed)';
+$string['lastactivity_notice'] = 'Last remaining activity: <strong>{$a}</strong>';
+$string['allcompleted_notice'] = 'Congratulations! You have completed all activities.';
+$string['pendingactivity'] = 'You must first complete \'{$a}\' before you can spin again.';
+$string['pendingactivity_notice'] = 'Please complete <strong>{$a}</strong> first before spinning again.';
 $string['page-mod-spinningwheel-x'] = 'Any Spinning Wheel module page';
 
 // Completion.

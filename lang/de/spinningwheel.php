@@ -22,31 +22,33 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['modulename'] = 'Glücksrad';
-$string['modulename_help'] = 'Mit dem Glücksrad bringen Sie Schwung und Spannung in Ihren Unterricht! Das animierte Rad wählt zufällig aus frei konfigurierbaren Einträgen — ob Fragen, Themen, Aufgaben oder direkt aus den Kursteilnehmer/innen. Mit Soundeffekten, Konfetti-Animation und anpassbaren Farben wird jede Drehung zum Erlebnis.
+$string['modulename'] = 'Spinning Wheel';
+$string['modulename_help'] = 'Mit dem Spinning Wheel bringen Sie Schwung und Spannung in Ihren Unterricht! Das animierte Rad wählt zufällig aus frei konfigurierbaren Einträgen — ob Fragen, Themen, Aufgaben oder direkt aus den Kursteilnehmer/innen. Mit Soundeffekten, Konfetti-Animation und anpassbaren Farben wird jede Drehung zum Erlebnis.
 
-<strong>So setzen Sie das Glücksrad ein:</strong>
+<strong>So setzen Sie das Spinning Wheel ein:</strong>
 <ul>
 <li><strong>Faire Beteiligung fördern:</strong> Tragen Sie die Namen Ihrer Teilnehmer/innen ein (oder nutzen Sie die automatische Teilnehmerliste) und lassen Sie das Rad entscheiden, wer als Nächstes dran ist. Das sorgt für eine gleichmäßige Beteiligung und nimmt den Druck, sich selbst melden zu müssen — niemand wird bloßgestellt, denn „das Rad hat entschieden".</li>
 <li><strong>Themen und Aufgaben spannend verteilen:</strong> Befüllen Sie das Rad mit Projektthemen, Referatsthemen oder Aufgaben und lassen Sie Ihre Gruppen drehen. So wird die Verteilung zum fairen Spielmoment statt zur endlosen Diskussion. Tipp: Mit der Option „Nach dem Drehen entfernen" wird jedes Thema nur einmal vergeben.</li>
 <li><strong>Eisbrecher und Kennenlernrunden auflockern:</strong> Starten Sie Ihren Kurs mit kreativen Fragen auf dem Rad — von „Was ist dein Lieblingsgericht?" bis „Welche Superkraft hättest du gerne?". Das Zufallselement macht Vorstellungsrunden lebendiger und nimmt schüchternen Teilnehmer/innen die Hemmung, denn alle beantworten die gleiche zufällige Frage.</li>
 </ul>';
 $string['modulenameplural'] = 'Glücksräder';
-$string['pluginname'] = 'Glücksrad';
-$string['pluginadministration'] = 'Glücksrad-Administration';
+$string['pluginname'] = 'Spinning Wheel';
+$string['pluginadministration'] = 'Spinning Wheel Administration';
 
 // Capabilities.
-$string['spinningwheel:addinstance'] = 'Neues Glücksrad hinzufügen';
-$string['spinningwheel:view'] = 'Glücksrad ansehen';
+$string['spinningwheel:addinstance'] = 'Neues Spinning Wheel hinzufügen';
+$string['spinningwheel:view'] = 'Spinning Wheel ansehen';
 $string['spinningwheel:spin'] = 'Rad drehen';
 $string['spinningwheel:viewhistory'] = 'Drehverlauf ansehen';
 $string['spinningwheel:clearhistory'] = 'Drehverlauf löschen';
 
 // Form.
 $string['entrysource'] = 'Eintragsquelle';
-$string['entrysource_help'] = 'Wählen Sie, ob das Rad mit eingeschriebenen Kursteilnehmern oder mit manuellen Einträgen befüllt werden soll.';
+$string['entrysource_help'] = 'Wählen Sie, ob das Rad mit eingeschriebenen Kursteilnehmern, manuellen Einträgen oder Kursaktivitäten befüllt werden soll. Die Option "Kursaktivitäten" erfordert das Plugin availability_spinningwheel zur Steuerung des Aktivitätszugangs.';
 $string['entrysource_participants'] = 'Kursteilnehmer/innen';
 $string['entrysource_manual'] = 'Manuelle Einträge';
+$string['entrysource_activities'] = 'Kursaktivitäten';
+$string['entrysource_activities_notinstalled'] = '<small class="text-muted">ⓘ Die Eintragsquelle "Kursaktivitäten" erfordert das Plugin <strong>availability_spinningwheel</strong>. <a href="https://github.com/andreajuettner/moodle-availability_spinningwheel" target="_blank">Mehr erfahren</a></small>';
 $string['rolefilter'] = 'Rollenfilter';
 $string['rolefilter_help'] = 'Nur Nutzer/innen mit den ausgewählten Rollen auf dem Rad anzeigen. Leer lassen, um alle eingeschriebenen Nutzer/innen einzubeziehen.';
 $string['manualentries'] = 'Manuelle Einträge';
@@ -79,7 +81,14 @@ $string['historycleared'] = 'Der Drehverlauf wurde gelöscht.';
 $string['spincount'] = '{$a} Drehung(en)';
 $string['maxspinsreached'] = 'Maximale Anzahl an Drehungen erreicht.';
 $string['removespins'] = 'Alle Drehaufzeichnungen entfernen';
-$string['page-mod-spinningwheel-x'] = 'Jede Glücksrad-Modulseite';
+$string['startnow'] = 'Jetzt bearbeiten';
+$string['later'] = 'Später';
+$string['completed'] = '(abgeschlossen)';
+$string['lastactivity_notice'] = 'Letzte verbleibende Aktivität: <strong>{$a}</strong>';
+$string['allcompleted_notice'] = 'Herzlichen Glückwunsch! Sie haben alle Aktivitäten abgeschlossen.';
+$string['pendingactivity'] = 'Sie müssen zuerst \'{$a}\' abschließen, bevor Sie erneut drehen können.';
+$string['pendingactivity_notice'] = 'Bitte schließen Sie zuerst <strong>{$a}</strong> ab, bevor Sie erneut drehen.';
+$string['page-mod-spinningwheel-x'] = 'Jede Spinning Wheel-Modulseite';
 
 // Completion.
 $string['completionspin'] = 'Teilnehmer/in muss das Rad drehen';
@@ -120,7 +129,7 @@ $string['showtitle'] = 'Aktivitätstitel anzeigen';
 $string['showtitle_help'] = 'Zeigt den Aktivitätsnamen über dem Rad an. Dies ist vor allem nützlich, wenn das Rad auf der Kursseite eingebettet ist, wo der Moodle-Aktivitätskopf nicht angezeigt wird.';
 $string['showshadow'] = 'Radschatten anzeigen';
 $string['embedoncourse'] = 'Anzeigen';
-$string['embedoncourse_help'] = 'Wählen Sie, wie das Glücksrad auf der Kursseite angezeigt wird:<br>
+$string['embedoncourse_help'] = 'Wählen Sie, wie das Spinning Wheel auf der Kursseite angezeigt wird:<br>
 <strong>Automatisch:</strong> Standard-Aktivitätslink (Klick öffnet die Aktivität).<br>
 <strong>Einbetten:</strong> Das Rad wird direkt auf der Kursseite angezeigt.<br>
 <strong>Öffnen:</strong> Klick öffnet das Rad bildschirmfüllend im selben Fenster (mit Zurück-Button).<br>
@@ -156,7 +165,7 @@ $string['mobile:taptoopen'] = 'Tippen, um im Browser zu öffnen';
 // Didaktische Beispiele.
 $string['spinningwheel:viewexamples'] = 'Didaktische Beispiele ansehen';
 $string['examples'] = 'Didaktische Beispiele';
-$string['examples_intro'] = 'Die folgenden Szenarien zeigen, wie das Glücksrad im Unterricht eingesetzt werden kann. Jedes Beispiel enthält eine Ausgangssituation, eine Schritt-für-Schritt-Umsetzung, den didaktischen Mehrwert und empfohlene Plugin-Einstellungen.';
+$string['examples_intro'] = 'Die folgenden Szenarien zeigen, wie das Spinning Wheel im Unterricht eingesetzt werden kann. Jedes Beispiel enthält eine Ausgangssituation, eine Schritt-für-Schritt-Umsetzung, den didaktischen Mehrwert und empfohlene Plugin-Einstellungen.';
 $string['example_situation'] = 'Ausgangssituation';
 $string['example_implementation'] = 'Umsetzung';
 $string['example_benefit'] = 'Didaktischer Mehrwert';
@@ -165,7 +174,7 @@ $string['example_settings'] = 'Empfohlene Einstellungen';
 // Beispiel 1.
 $string['example1_title'] = 'Faire Beteiligung im Unterrichtsgespräch';
 $string['example1_situation'] = 'In vielen Klassen melden sich immer dieselben Lernenden, während andere sich zurückhalten. Die Lehrkraft möchte eine gleichmäßige Beteiligung fördern, ohne einzelne Personen bloßzustellen.';
-$string['example1_implementation'] = 'Das Glücksrad wird mit allen Kursteilnehmer/innen bestückt. Vor einer Frage oder Aufgabe dreht die Lehrkraft das Rad am Smartboard oder per geteiltem Bildschirm. Die ausgewählte Person beantwortet die Frage, löst eine Aufgabe oder fasst einen Textabschnitt zusammen. Durch die Aktivierung von „Nach Auswahl entfernen" wird sichergestellt, dass im Laufe der Stunde jede/r einmal drankommt — kein Verstecken, aber auch kein Bloßstellen, da der Zufall entscheidet.';
+$string['example1_implementation'] = 'Das Spinning Wheel wird mit allen Kursteilnehmer/innen bestückt. Vor einer Frage oder Aufgabe dreht die Lehrkraft das Rad am Smartboard oder per geteiltem Bildschirm. Die ausgewählte Person beantwortet die Frage, löst eine Aufgabe oder fasst einen Textabschnitt zusammen. Durch die Aktivierung von „Nach Auswahl entfernen" wird sichergestellt, dass im Laufe der Stunde jede/r einmal drankommt — kein Verstecken, aber auch kein Bloßstellen, da der Zufall entscheidet.';
 $string['example1_benefit'] = 'Die Zufallsauswahl wird von Lernenden als fair empfunden und erzeugt eine positive Grundspannung („Bin ich als Nächstes dran?"), die die Aufmerksamkeit erhöht. Gleichzeitig nimmt sie den sozialen Druck, sich aktiv melden zu müssen.';
 $string['example1_settings'] = 'Eintragsquelle: Kursteilnehmer/innen · Anzeige: Name + Profilbild · Nach Auswahl entfernen: aktiviert · Rollenfilter: nur Teilnehmer/innen (Lehrkräfte ausschließen)';
 
@@ -201,7 +210,7 @@ $string['example5_settings'] = 'Eintragsquelle: Manuell · Nach Auswahl entferne
 $string['example6_title'] = 'Belohnungssystem und positive Verstärkung';
 $string['example6_situation'] = 'Die Lehrkraft möchte positives Verhalten, gute Mitarbeit oder besondere Leistungen sichtbar belohnen — ohne auf materielle Belohnungen zurückzugreifen.';
 $string['example6_implementation'] = 'Auf dem Rad stehen kleine Privilegien und Belohnungen: „5 Minuten früher in die Pause", „Sitzplatz frei wählen", „Musik während der Stillarbeit", „Hausaufgaben-Joker für morgen", „Du darfst das nächste Spiel aussuchen" oder „Ein Lob an die ganze Klasse". Lernende, die eine besondere Leistung erbracht oder sich positiv hervorgetan haben, dürfen als Anerkennung am Rad drehen. Der Überraschungseffekt verstärkt die positive Emotion.';
-$string['example6_benefit'] = 'Das Glücksrad verbindet extrinsische Motivation (Belohnung) mit einem spielerischen Element. Die Ungewissheit, welche Belohnung kommt, macht das System spannender als eine vorhersehbare Belohnung. Wichtig: Die Einträge sollten so gewählt sein, dass alle Ergebnisse positiv sind — es gibt keine „Nieten".';
+$string['example6_benefit'] = 'Das Spinning Wheel verbindet extrinsische Motivation (Belohnung) mit einem spielerischen Element. Die Ungewissheit, welche Belohnung kommt, macht das System spannender als eine vorhersehbare Belohnung. Wichtig: Die Einträge sollten so gewählt sein, dass alle Ergebnisse positiv sind — es gibt keine „Nieten".';
 $string['example6_settings'] = 'Eintragsquelle: Manuell · Konfetti + Jubel-Sound: aktiviert (feierlicher Moment) · Gewinnernachricht: z. B. „Herzlichen Glückwunsch!" · Nach Auswahl entfernen: deaktiviert';
 
 // Beispiel 7.
@@ -221,13 +230,13 @@ $string['example8_settings'] = 'Eintragsquelle: Manuell · Nach Auswahl entferne
 // Beispiel 9.
 $string['example9_title'] = 'Entscheidungshelfer bei Gleichstand';
 $string['example9_situation'] = 'Bei Abstimmungen im Klassenrat, bei der Auswahl eines Ausflugsziels oder bei der Entscheidung für ein gemeinsames Projekt kommt es zu einem Gleichstand oder einer endlosen Diskussion ohne Ergebnis. Die Gruppe dreht sich im Kreis.';
-$string['example9_implementation'] = 'Die verbleibenden Optionen (z. B. „Zoo" und „Kletterpark" nach einer 50/50-Abstimmung) werden auf das Rad gesetzt. Das Glücksrad wird als neutraler Schiedsrichter eingesetzt und trifft die finale Entscheidung. Die Lehrkraft erklärt: „Wir haben ein Unentschieden — das Rad entscheidet." Der Konfetti-Effekt nach dem Ergebnis verwandelt einen potenziell frustrierenden Moment in einen feierlichen Anlass, den alle mittragen können.';
-$string['example9_benefit'] = 'Das Glücksrad ist kein Ersatz für demokratische Prozesse, sondern eine Ergänzung bei Patt-Situationen. Es beendet unproduktive Diskussionen auf eine Weise, die als neutral akzeptiert wird. Gleichzeitig lernen Schüler/innen, Ergebnisse zu akzeptieren, die nicht ihrer ersten Wahl entsprechen — eine wichtige soziale Kompetenz.';
+$string['example9_implementation'] = 'Die verbleibenden Optionen (z. B. „Zoo" und „Kletterpark" nach einer 50/50-Abstimmung) werden auf das Rad gesetzt. Das Spinning Wheel wird als neutraler Schiedsrichter eingesetzt und trifft die finale Entscheidung. Die Lehrkraft erklärt: „Wir haben ein Unentschieden — das Rad entscheidet." Der Konfetti-Effekt nach dem Ergebnis verwandelt einen potenziell frustrierenden Moment in einen feierlichen Anlass, den alle mittragen können.';
+$string['example9_benefit'] = 'Das Spinning Wheel ist kein Ersatz für demokratische Prozesse, sondern eine Ergänzung bei Patt-Situationen. Es beendet unproduktive Diskussionen auf eine Weise, die als neutral akzeptiert wird. Gleichzeitig lernen Schüler/innen, Ergebnisse zu akzeptieren, die nicht ihrer ersten Wahl entsprechen — eine wichtige soziale Kompetenz.';
 $string['example9_settings'] = 'Eintragsquelle: Manuell (nur die Optionen im Gleichstand) · Konfetti + Jubel-Sound: aktiviert · Nach Auswahl entfernen: deaktiviert (bei Bedarf erneut drehen) · Max. Drehungen: 1 · Drehdauer: 5000 ms (maximale Spannung)';
 
 // Beispiel 10.
 $string['example10_title'] = 'Mobile Einsatzmöglichkeiten im Präsenz- und Hybridunterricht';
 $string['example10_situation'] = 'Nicht in jedem Unterrichtsraum steht ein Computer mit Beamer zur Verfügung. Bei Exkursionen, Outdoor-Aktivitäten oder im Hybridunterricht braucht die Lehrkraft eine mobile Lösung, die auch auf dem Smartphone oder Tablet funktioniert.';
 $string['example10_implementation'] = 'Das Spinning Wheel Plugin funktioniert vollständig in der Moodle Mobile App — mit Animation, Profilbildern, Sounds und Konfetti. Die Lehrkraft öffnet die Aktivität in der Moodle App auf dem Tablet und zeigt das Rad der Klasse. Alternativ teilt sie den Bildschirm über ein Konferenztool. Lernende können auf ihren eigenen Geräten in der App drehen, wenn die Einstellung „Teilnehmer dürfen drehen" aktiviert ist. Im Hybridunterricht können sowohl Präsenz- als auch Remote-Teilnehmer/innen über die App oder den Browser gleichzeitig das Rad sehen und nutzen. Der Drehverlauf dokumentiert alle Ergebnisse für die Nachbereitung.';
-$string['example10_benefit'] = 'Die volle App-Unterstützung macht das Glücksrad ortsunabhängig einsetzbar — im Klassenzimmer, auf dem Schulhof, bei Exkursionen oder im Distanzunterricht. Die einheitliche Erfahrung über alle Geräte hinweg (Desktop, Tablet, Smartphone) stellt sicher, dass alle Beteiligten die gleiche Funktionalität haben.';
+$string['example10_benefit'] = 'Die volle App-Unterstützung macht das Spinning Wheel ortsunabhängig einsetzbar — im Klassenzimmer, auf dem Schulhof, bei Exkursionen oder im Distanzunterricht. Die einheitliche Erfahrung über alle Geräte hinweg (Desktop, Tablet, Smartphone) stellt sicher, dass alle Beteiligten die gleiche Funktionalität haben.';
 $string['example10_settings'] = 'Alle Einstellungen je nach Einsatzzweck (siehe Szenarien 1–9) · Tipp: Nach Änderungen Cache leeren und in der App neu einloggen';

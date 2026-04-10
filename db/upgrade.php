@@ -102,5 +102,16 @@ function xmldb_spinningwheel_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026022002, 'spinningwheel');
     }
 
+    if ($oldversion < 2026041100) {
+        $table = new xmldb_table('spinningwheel_spins');
+
+        $field = new xmldb_field('selectedcmid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'selecteduserid');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026041100, 'spinningwheel');
+    }
+
     return true;
 }

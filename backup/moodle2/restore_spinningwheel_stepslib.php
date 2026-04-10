@@ -99,6 +99,9 @@ class restore_spinningwheel_activity_structure_step extends restore_activity_str
         if (!empty($data->selecteduserid)) {
             $data->selecteduserid = $this->get_mappingid('user', $data->selecteduserid);
         }
+        if (!empty($data->selectedcmid)) {
+            $data->selectedcmid = $this->get_mappingid('course_module', $data->selectedcmid);
+        }
 
         $DB->insert_record('spinningwheel_spins', $data);
     }

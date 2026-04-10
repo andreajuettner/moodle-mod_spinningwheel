@@ -60,6 +60,27 @@ export const init = async(cmid, wheelid, entries, colors, config) => {
         await preloadImages(entries);
     }
 
+    // Handle "go to activity" links — navigate parent window and close popup/iframe.
+    container.addEventListener('click', (e) => {
+        const link = e.target.closest('[data-action="goto-activity"]');
+        if (!link) {
+            return;
+        }
+        e.preventDefault();
+        const url = link.href;
+        if (window.opener) {
+            // Popup window — navigate opener and close popup.
+            window.opener.location.href = url;
+            window.close();
+        } else if (window.self !== window.top) {
+            // Iframe — navigate parent window.
+            window.top.location.href = url;
+        } else {
+            // Normal window.
+            window.location.href = url;
+        }
+    });
+
     // Initial draw.
     draw(canvas, entries, colors, currentRotation, config);
 
@@ -115,12 +136,15 @@ export const init = async(cmid, wheelid, entries, colors, config) => {
 
             // Show result modal.
             const title = config.activityname || await getString('pluginname', 'mod_spinningwheel');
+            const activityurl = result.activityurl || '';
             const {html} = await Templates.renderForPromise('mod_spinningwheel/result_modal', {
                 selectedtext: result.selectedtext,
                 pictureurl: result.pictureurl || '',
                 haspicture: !!(result.pictureurl),
                 winnermessage: config.winnermessage || '',
                 haswinnermessage: !!(config.winnermessage),
+                activityurl: activityurl,
+                hasactivityurl: !!(activityurl),
             });
 
             const modal = await Modal.create({
@@ -133,6 +157,15 @@ export const init = async(cmid, wheelid, entries, colors, config) => {
 
             // Remove the backdrop so the wheel stays visible behind the modal.
             modal.getRoot().siblings('.modal-backdrop').remove();
+
+            // "Later" button dismisses modal and reloads page to reflect availability changes.
+            const dismissBtn = modal.getRoot()[0].querySelector('[data-action="dismiss"]');
+            if (dismissBtn) {
+                dismissBtn.addEventListener('click', () => {
+                    modal.destroy();
+                    window.location.reload();
+                });
+            }
 
             // Update aria result (stays visually hidden, only for screen readers).
             resultRegion.textContent = result.selectedtext;
