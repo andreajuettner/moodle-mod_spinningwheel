@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for mod_spinningwheel.
+ * Hook callbacks for mod_spinningwheel.
  *
  * @package   mod_spinningwheel
  * @copyright 2026 Andrea Juettner, andrea.juettner@eledia.de; AI-assisted by Claude (Anthropic).
@@ -24,8 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026052800;
-$plugin->requires  = 2025092600;
-$plugin->component = 'mod_spinningwheel';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.1.0';
+$callbacks = [
+    [
+        'hook' => core\hook\output\before_footer_html_generation::class,
+        'callback' => [mod_spinningwheel\hook\before_footer::class, 'callback'],
+        'priority' => 0,
+    ],
+];

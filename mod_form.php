@@ -121,6 +121,13 @@ class mod_spinningwheel_mod_form extends moodleform_mod {
         $mform->setDefault('maxspins', 0);
         $mform->addHelpButton('maxspins', 'maxspins', 'spinningwheel');
 
+        // Return-to-wheel button (only relevant in course activities / activity-unlock mode).
+        $mform->addElement('selectyesno', 'showreturnbutton', get_string('showreturnbutton', 'spinningwheel'));
+        $mform->setDefault('showreturnbutton', 1);
+        $mform->addHelpButton('showreturnbutton', 'showreturnbutton', 'spinningwheel');
+        $mform->hideIf('showreturnbutton', 'entrysource', 'eq', SPINNINGWHEEL_SOURCE_PARTICIPANTS);
+        $mform->hideIf('showreturnbutton', 'entrysource', 'eq', SPINNINGWHEEL_SOURCE_MANUAL);
+
         // Permissions section.
         $mform->addElement('header', 'permissionshdr', get_string('permissions', 'spinningwheel'));
 

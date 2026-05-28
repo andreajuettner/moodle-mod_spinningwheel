@@ -51,8 +51,8 @@
     border-color: var(--bs-primary, #0d6efd);
 }
 
-.mod-spinningwheel-colortext {
-    width: 90px !important;
+input.mod-spinningwheel-colortext {
+    width: 90px;
 }
 
 /* Touch-friendly spin button. */
@@ -117,6 +117,11 @@
     display: block;
 }
 
+/* The embedded pagelayout must override Moodle core's layout, chrome and body
+   styles; !important is required to win against core rules of equal/higher
+   specificity. Scoped strictly to .pagelayout-embedded. */
+/* stylelint-disable declaration-no-important */
+
 /* Embed layout: body-level styles (class is ON body, so use body.class selector). */
 body.pagelayout-embedded {
     background: transparent !important;
@@ -168,5 +173,24 @@ html.pagelayout-embedded {
 }
 
 .pagelayout-embedded .mod-spinningwheel .wheel-stage {
+    /* stylelint-disable-next-line csstree/validator -- min()/calc() is valid CSS; the bundled csstree validator is outdated. */
     max-width: min(500px, calc(100vw - 16px)) !important;
+}
+
+/* stylelint-enable declaration-no-important */
+
+/* Activity-unlock mode: "back to wheel" button, placed at the top of the activity
+   content region (right-aligned) by the returnbutton AMD module. Hidden until moved. */
+.mod-spinningwheel-returnbar {
+    display: none;
+}
+
+.mod-spinningwheel-returnbar.mod-spinningwheel-returnbar-inline {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.mod-spinningwheel-returnbar .mod-spinningwheel-returnicon {
+    font-size: 1.1em;
 }

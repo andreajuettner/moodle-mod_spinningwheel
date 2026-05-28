@@ -27,6 +27,7 @@ $string['allcompleted_notice'] = 'Congratulations! You have completed all activi
 $string['allowstudentspin'] = 'Allow students to spin';
 $string['allowstudentspin_help'] = 'If enabled, students with view permission can also spin the wheel.';
 $string['backtocourse'] = 'Back to course';
+$string['backtowheel'] = 'Back to Spinning Wheel';
 $string['behaviour'] = 'Behaviour';
 $string['celebratesound'] = 'Celebration sound';
 $string['celebratesound_1'] = 'Applause & Cheer';
@@ -159,7 +160,6 @@ $string['pendingactivity_notice'] = 'Please complete <strong>{$a}</strong> first
 $string['permissions'] = 'Permissions';
 $string['pluginadministration'] = 'Spinning Wheel administration';
 $string['pluginname'] = 'Spinning Wheel';
-
 $string['privacy:metadata:spinningwheel_entries'] = 'Wheel entries that reference enrolled users.';
 $string['privacy:metadata:spinningwheel_entries:text'] = 'The display text of the entry.';
 $string['privacy:metadata:spinningwheel_entries:timecreated'] = 'The time the entry was created.';
@@ -180,6 +180,9 @@ $string['rolefilter_help'] = 'Only include users with the selected roles on the 
 $string['selectedentry'] = 'Selected';
 $string['showconfetti'] = 'Show confetti celebration';
 $string['showconfetti_help'] = 'When enabled, a confetti animation plays after each spin result.';
+$string['showreturnbutton'] = 'Show "back to wheel" button';
+$string['showreturnbutton_help'] = 'When the entry source is "Course activities", show a button on each unlocked activity that takes the learner straight back to the wheel. This keeps the learning-path flow intact.';
+
 $string['showshadow'] = 'Show wheel shadow';
 $string['showtitle'] = 'Show activity title';
 $string['showtitle_help'] = 'Display the activity name above the wheel. This is mainly useful when the wheel is embedded on the course page, where Moodle\'s activity header is not shown.';

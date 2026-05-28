@@ -36,6 +36,7 @@ require_capability('mod/spinningwheel:view', $context);
 $spinningwheel = $DB->get_record('spinningwheel', ['id' => $cm->instance], '*', MUST_EXIST);
 
 spinningwheel_view($spinningwheel, $course, $cm, $context);
+spinningwheel_update_return_marker($spinningwheel, $cm, $course, $USER->id);
 
 $groupmode = groups_get_activity_groupmode($cm);
 $currentgroup = ($groupmode > 0) ? groups_get_activity_group($cm, true) : 0;

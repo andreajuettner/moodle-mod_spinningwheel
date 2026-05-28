@@ -27,6 +27,7 @@ $string['allcompleted_notice'] = 'Herzlichen Glückwunsch! Sie haben alle Aktivi
 $string['allowstudentspin'] = 'Teilnehmer/innen dürfen drehen';
 $string['allowstudentspin_help'] = 'Wenn aktiviert, können Teilnehmer/innen mit Ansichtsberechtigung auch das Rad drehen.';
 $string['backtocourse'] = 'Zurück zum Kurs';
+$string['backtowheel'] = 'Zurück zum Glücksrad';
 $string['behaviour'] = 'Verhalten';
 $string['celebratesound'] = 'Jubel-Sound';
 $string['celebratesound_1'] = 'Applaus & Jubel';
@@ -159,7 +160,6 @@ $string['pendingactivity_notice'] = 'Bitte schließen Sie zuerst <strong>{$a}</s
 $string['permissions'] = 'Berechtigungen';
 $string['pluginadministration'] = 'Spinning Wheel Administration';
 $string['pluginname'] = 'Spinning Wheel';
-
 $string['privacy:metadata:spinningwheel_entries'] = 'Rad-Einträge, die auf eingeschriebene Nutzer/innen verweisen.';
 $string['privacy:metadata:spinningwheel_entries:text'] = 'Der Anzeigetext des Eintrags.';
 $string['privacy:metadata:spinningwheel_entries:timecreated'] = 'Der Zeitpunkt, an dem der Eintrag erstellt wurde.';
@@ -180,6 +180,9 @@ $string['rolefilter_help'] = 'Nur Nutzer/innen mit den ausgewählten Rollen auf 
 $string['selectedentry'] = 'Ausgewählt';
 $string['showconfetti'] = 'Konfetti-Feier anzeigen';
 $string['showconfetti_help'] = 'Wenn aktiviert, wird nach jedem Drehergebnis eine Konfetti-Animation abgespielt.';
+$string['showreturnbutton'] = '„Zurück zum Rad"-Schaltfläche anzeigen';
+$string['showreturnbutton_help'] = 'Im Modus „Kursaktivitäten" auf jeder freigeschalteten Aktivität eine Schaltfläche anzeigen, die direkt zum Rad zurückführt. So bleibt der Lernpfad-Fluss erhalten.';
+
 $string['showshadow'] = 'Radschatten anzeigen';
 $string['showtitle'] = 'Aktivitätstitel anzeigen';
 $string['showtitle_help'] = 'Zeigt den Aktivitätsnamen über dem Rad an. Dies ist vor allem nützlich, wenn das Rad auf der Kursseite eingebettet ist, wo der Moodle-Aktivitätskopf nicht angezeigt wird.';

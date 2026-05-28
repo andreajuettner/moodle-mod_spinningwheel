@@ -366,6 +366,31 @@ function spinningwheel_get_pending_activity(int $wheelid, int $userid, stdClass 
 }
 
 /**
+ * Set or clear the session marker that drives the "return to wheel" button on unlocked activities.
+ *
+ * @param stdClass $spinningwheel Instance record.
+ * @param object $cm Course module (cm_info or record) of the wheel.
+ * @param stdClass $course Course record.
+ * @param int $userid User to evaluate pending activities for.
+ */
+function spinningwheel_update_return_marker(stdClass $spinningwheel, object $cm, stdClass $course, int $userid): void {
+    global $SESSION;
+
+    $active = $spinningwheel->entrysource == SPINNINGWHEEL_SOURCE_ACTIVITIES
+        && !empty($spinningwheel->showreturnbutton)
+        && spinningwheel_get_pending_activity($spinningwheel->id, $userid, $course);
+
+    if ($active) {
+        $SESSION->spinningwheel_return = (object) [
+            'wheelcmid' => $cm->id,
+            'courseid' => $course->id,
+        ];
+    } else {
+        unset($SESSION->spinningwheel_return);
+    }
+}
+
+/**
  * Get the user summary for the outline report.
  *
  * @param object $course

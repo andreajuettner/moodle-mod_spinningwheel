@@ -53,7 +53,7 @@ class spin_wheel extends external_api {
      * @return array The spin result.
      */
     public static function execute(int $cmid, int $groupid = 0): array {
-        global $DB, $USER, $PAGE;
+        global $DB, $USER, $PAGE, $SESSION;
 
         $params = self::validate_parameters(self::execute_parameters(), [
             'cmid' => $cmid,
@@ -159,6 +159,13 @@ class spin_wheel extends external_api {
             $modinfo = get_fast_modinfo($course);
             if (isset($modinfo->cms[$selected->cmid])) {
                 $activityurl = $modinfo->cms[$selected->cmid]->url->out(false);
+            }
+            // Remember the originating wheel so unlocked activities can show a return button.
+            if (!empty($spinningwheel->showreturnbutton)) {
+                $SESSION->spinningwheel_return = (object) [
+                    'wheelcmid' => $cm->id,
+                    'courseid' => $course->id,
+                ];
             }
         }
 
